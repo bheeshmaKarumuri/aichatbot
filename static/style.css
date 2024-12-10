@@ -1,0 +1,200 @@
+/* General Body Styling for Dark Mode */
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background-color: #1e1e2e; /* Dark Background */
+    color: #dcdcdc; /* Light Text */
+    transition: background-color 0.3s, color 0.3s;
+}
+
+/* Chat Container in Dark Mode */
+.chat-container {
+    width: 75vw;
+    padding: 20px;
+    border-radius: 10px;
+    background-color: #27293d; /* Darker Background for Container */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8); /* Soft Shadow */
+    display: flex;
+    flex-direction: column;
+    height: 80vh;
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+h2 {
+    margin-bottom: 15px;
+    text-align: center;
+    color: #ffffff; /* White Text */
+}
+
+/* Theme Toggle Slider */
+.theme-toggle-container {
+    position: fixed;
+    top: 10px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.theme-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 25px;
+}
+
+.theme-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #555555; /* Toggle Background */
+    transition: 0.4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 4px;
+    bottom: 2.5px;
+    background-color: #ffffff;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #1a73e8; /* Blue Toggle */
+}
+
+input:checked + .slider:before {
+    transform: translateX(24px);
+}
+
+/* Chat Log Styling */
+.chat-log {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 10px;
+    border-radius: 8px;
+    background-color: #1e1e2e; /* Match Background */
+    scroll-behavior: smooth;
+}
+
+/* Message Styling */
+.message-container {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.message-container.user {
+    justify-content: flex-end;
+}
+
+.message-container.bot {
+    justify-content: flex-start;
+}
+
+.profile-image {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin: 0 10px;
+}
+
+.message-bubble {
+    max-width: 70%;
+    padding: 15px;
+    border-radius: 15px;
+    font-size: 15px;
+    line-height: 1.6;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    position: relative;
+    transition: transform 0.2s ease;
+    color: #ffffff;
+}
+
+.message-bubble:hover {
+    transform: scale(1.02); /* Subtle Hover Effect */
+}
+
+.user-message {
+    background-color: #1a73e8; /* User Message Blue */
+    border-top-left-radius: 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); /* Light Shadow */
+}
+
+.bot-message {
+    background-color: #444c5c; /* Bot Message Darker Gray */
+    border-top-right-radius: 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); /* Light Shadow */
+}
+
+/* Input Container and Styling */
+.input-container {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1); /* Light Border */
+}
+
+textarea#inputField {
+    flex-grow: 1;
+    padding: 12px;
+    margin-right: 10px;
+    border-radius: 8px;
+    border: none;
+    resize: none;
+    height: 50px;
+    background-color: #2f2f44; /* Darker Input Field */
+    color: #ffffff; /* Light Text */
+    transition: background-color 0.3s, color 0.3s;
+}
+
+textarea#inputField:focus {
+    outline: none;
+    background-color: #444c5c; /* Slightly Lighter Focus */
+}
+
+button {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    background-color: #1a73e8; /* Blue Button */
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+button:hover {
+    background-color: #1565c0; /* Darker Blue on Hover */
+    transform: translateY(-2px); /* Lift Effect */
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

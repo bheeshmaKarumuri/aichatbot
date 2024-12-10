@@ -1,0 +1,9 @@
+groq
+flask
+flask-socketio
+Flask
+Flask-SQLAlchemy
+Flask-Bcrypt
+eventlet
+gunicorn
+

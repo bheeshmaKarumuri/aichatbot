@@ -1,0 +1,82 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WELCOME to Amrita Academic Management Suite Home </title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Set dark mode as default
+            document.body.classList.add('light-mode');
+        });
+    
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+        }
+    
+        async function sendMessage() {
+            const userInput = document.getElementById('inputField').value;
+            if (!userInput.trim()) return;
+            document.getElementById('inputField').value = '';
+    
+            const chatLog = document.getElementById('chatLog');
+            
+            // Add user's message without profile image
+            const userMessageContainer = document.createElement('div');
+            userMessageContainer.className = 'message-container user';
+    
+            const userMessage = document.createElement('div');
+            userMessage.className = 'message-bubble user-message';
+            userMessage.textContent = userInput;
+    
+            userMessageContainer.appendChild(userMessage);
+            chatLog.appendChild(userMessageContainer);
+    
+            // Fetch response from the bot
+            const response = await fetch('/get_response', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ user_input: userInput }),
+            });
+            const data = await response.json();
+    
+            // Add bot's message without profile image
+            const botMessageContainer = document.createElement('div');
+            botMessageContainer.className = 'message-container bot';
+    
+            const botMessage = document.createElement('div');
+            botMessage.className = 'message-bubble bot-message';
+            botMessage.textContent = data.response;
+    
+            botMessageContainer.appendChild(botMessage);
+            chatLog.appendChild(botMessageContainer);
+    
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+    
+        function handleKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            } else if (event.key === 'Enter' && event.shiftKey) {
+                const inputField = document.getElementById('inputField');
+                inputField.value += '\n';
+            }
+        }
+    </script>
+    
+</head>
+<body>
+    <div class="chat-container">
+        
+        <div id="chatLog" class="chat-log"></div>
+        <div class="input-container">
+            <textarea id="inputField" style="height: 3vh;border-radius: 20px;" placeholder="Type your message here..." onkeydown="handleKeyDown(event)"></textarea>
+            <button onclick="sendMessage()" style="height:5vh;border-radius: 15px;">Send</button>
+        </div>
+</body>
+</html>
