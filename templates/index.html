@@ -1,82 +1,217 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WELCOME to Amrita Academic Management Suite Home </title>
+    <title>AI Chatbot</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script>
+
+function copyText(messageClass) {
+        // Find the message by its class
+        const messageElement = document.querySelector(`.${messageClass} p`);
+        const textToCopy = messageElement.textContent || messageElement.innerText;
+
+        // Create a temporary input element to copy the text
+        const textArea = document.createElement("textarea");
+        textArea.value = textToCopy;
+        document.body.appendChild(textArea);
+        textArea.select();  // Select the text
+        document.execCommand("copy");  // Copy the selected text
+        document.body.removeChild(textArea);  // Remove the temporary input
+
+        // Optional: Show a success message or change button style
+        alert('Text copied to clipboard!');
+    }
         document.addEventListener("DOMContentLoaded", () => {
-            // Set dark mode as default
-            document.body.classList.add('light-mode');
+            document.body.classList.add('light-mode'); // Default to light mode
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+            }
+            loadChatHistory();
         });
-    
-        function toggleTheme() {
-            document.body.classList.toggle('dark-mode');
-        }
-    
-        async function sendMessage() {
-            const userInput = document.getElementById('inputField').value;
-            if (!userInput.trim()) return;
-            document.getElementById('inputField').value = '';
-    
+
+        let currentPage = 1;
+        let isIncognito = false;
+
+        // Load Chat History
+        async function loadChatHistory() {
             const chatLog = document.getElementById('chatLog');
-            
-            // Add user's message without profile image
-            const userMessageContainer = document.createElement('div');
-            userMessageContainer.className = 'message-container user';
-    
-            const userMessage = document.createElement('div');
-            userMessage.className = 'message-bubble user-message';
-            userMessage.textContent = userInput;
-    
-            userMessageContainer.appendChild(userMessage);
-            chatLog.appendChild(userMessageContainer);
-    
-            // Fetch response from the bot
-            const response = await fetch('/get_response', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ user_input: userInput }),
-            });
-            const data = await response.json();
-    
-            // Add bot's message without profile image
-            const botMessageContainer = document.createElement('div');
-            botMessageContainer.className = 'message-container bot';
-    
-            const botMessage = document.createElement('div');
-            botMessage.className = 'message-bubble bot-message';
-            botMessage.textContent = data.response;
-    
-            botMessageContainer.appendChild(botMessage);
-            chatLog.appendChild(botMessageContainer);
-    
-            chatLog.scrollTop = chatLog.scrollHeight;
-        }
-    
-        function handleKeyDown(event) {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                sendMessage();
-            } else if (event.key === 'Enter' && event.shiftKey) {
-                const inputField = document.getElementById('inputField');
-                inputField.value += '\n';
+            try {
+                const response = await fetch(`/get_chat_history?page=${currentPage}&per_page=10`);
+                if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+                const data = await response.json();
+
+                if (data.chats) {
+                    data.chats.forEach(chat => {
+                        appendChatMessage(chat.prompt, 'user');
+                        appendChatMessage(chat.response, 'bot');
+                    });
+                    chatLog.scrollTop = chatLog.scrollHeight; // Scroll to bottom
+                }
+            } catch (error) {
+                console.error('Error loading chat history:', error);
             }
         }
+
+        // Append Message to Chat Log
+        function appendChatMessage(message, sender) {
+            const chatLog = document.getElementById('chatLog');
+            const messageContainer = document.createElement('div');
+            messageContainer.className = `message-container ${sender}`;
+
+            const messageBubble = document.createElement('div');
+            messageBubble.className = `message-bubble ${sender}-message`;
+
+            const messageTextDiv = document.createElement('div');
+            messageTextDiv.className = 'message-text';
+            messageTextDiv.textContent = message;
+
+            messageBubble.appendChild(messageTextDiv);
+            messageContainer.appendChild(messageBubble);
+            chatLog.appendChild(messageContainer);
+
+            chatLog.scrollTop = chatLog.scrollHeight; // Auto-scroll
+        }
+ 
+        // Upload Image
+        async function uploadImage() {
+            const fileInput = document.getElementById('imageUpload');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert("No file selected!");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/upload_image', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                if (data.caption) {
+                    appendChatMessage(file.name, 'user'); // Show file name
+                    appendChatMessage(data.caption, 'bot'); // Show caption
+                } else {
+                    appendChatMessage("Failed to generate caption.", 'bot');
+                }
+            } catch (error) {
+                console.error('Error uploading image:', error);
+                appendChatMessage("Error uploading image.", 'bot');
+            }
+        }
+ 
+        // Send User Message
+        async function sendMessage() {
+            const inputField = document.getElementById('inputField');
+            const userInput = inputField.value.trim();
+            if (!userInput) return;
+
+            inputField.value = ''; // Clear input
+            appendChatMessage(userInput, 'user');
+
+            try {
+                const response = await fetch('/get_response', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_input: userInput, incognito: isIncognito })
+                });
+                if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+                const data = await response.json();
+                appendChatMessage(data.response, 'bot');
+            } catch (error) {
+                console.error('Error sending message:', error);
+                appendChatMessage("Failed to get a response. Please try again.", 'bot');
+            }
+        }
+
+        // Search Chat
+        async function searchChat() {
+            const searchInput = document.getElementById('searchInput').value.trim();
+            const chatLog = document.getElementById('chatLog');
+            chatLog.innerHTML = ''; // Clear chat log
+
+            try {
+                const response = await fetch(`/search_chat_history?query=${encodeURIComponent(searchInput)}`);
+                if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+                const data = await response.json();
+                if (data.chats) {
+                    data.chats.forEach(chat => {
+                        appendChatMessage(chat.prompt, 'user');
+                        appendChatMessage(chat.response, 'bot');
+                    });
+                } else {
+                    appendChatMessage("No results found.", 'bot');
+                }
+            } catch (error) {
+                console.error('Error searching chat history:', error);
+            }
+        }
+
+        // Clear Chat
+        async function clearChat() {
+            const chatLog = document.getElementById('chatLog');
+            try {
+                const response = await fetch('/clear_chat_history', { method: 'DELETE' });
+                if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+                const data = await response.json();
+                chatLog.innerHTML = ''; // Clear visually
+                alert(data.message);
+            } catch (error) {
+                console.error('Error clearing chat history:', error);
+            }
+        }
+
+        // Toggle Incognito Mode
+        function toggleIncognito() {
+            isIncognito = document.getElementById('incognitoToggle').checked;
+            alert(`Incognito Mode is ${isIncognito ? "ON" : "OFF"}`);
+        }
     </script>
-    
 </head>
 <body>
     <div class="chat-container">
-        
-        <div id="chatLog" class="chat-log"></div>
-        <div class="input-container">
-            <textarea id="inputField" style="height: 3vh;border-radius: 20px;" placeholder="Type your message here..." onkeydown="handleKeyDown(event)"></textarea>
-            <button onclick="sendMessage()" style="height:5vh;border-radius: 15px;">Send</button>
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="actions">
+                <label>
+                    <input type="checkbox" id="incognitoToggle" onchange="toggleIncognito()"> Incognito Mode
+                </label>
+            </div>
+            <div class="title">AI Chatbot</div>
+            <div class="actions">
+                <button onclick="clearChat()">Clear Chat</button>
+            </div>
         </div>
+
+        <!-- Chat Log -->
+        <div id="chatLog" class="chat-log"></div>
+
+        <!-- Upload Section -->
+        <div class="upload-container">
+            <label for="imageUpload">Upload an image:</label>
+            <input type="file" id="imageUpload" accept="image/*">
+            <button onclick="uploadImage()">Submit</button>
+        </div>
+        
+        <!-- Input Section -->
+        <div class="input-container">
+            <textarea id="inputField" placeholder="Type your message here..." onkeydown="if(event.key === 'Enter') sendMessage();"></textarea>
+            <button onclick="sendMessage()">Send</button>
+        </div>
+
+        <!-- Search Section -->
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search chat history...">
+            <button onclick="searchChat()">Search</button>
+        </div>
+    </div>
 </body>
 </html>

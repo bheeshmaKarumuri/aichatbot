@@ -1,99 +1,79 @@
-/* General Body Styling for Dark Mode */
+/* General Styles */
 body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #0d1117; /* Deep Black Background */
+    color: #c9d1d9; /* Soft Gray Text */
+    transition: background-color 0.3s, color 0.3s;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    font-family: Arial, sans-serif;
-    margin: 0;
-    background-color: #1e1e2e; /* Dark Background */
-    color: #dcdcdc; /* Light Text */
-    transition: background-color 0.3s, color 0.3s;
 }
 
-/* Chat Container in Dark Mode */
+/* Chat Container */
 .chat-container {
     width: 75vw;
+    height: 80vh;
     padding: 20px;
     border-radius: 10px;
-    background-color: #27293d; /* Darker Background for Container */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8); /* Soft Shadow */
+    background-color: #161b22; /* Dark Gray Container */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8); /* Deep Shadow */
     display: flex;
     flex-direction: column;
-    height: 80vh;
     transition: background-color 0.3s, box-shadow 0.3s;
 }
 
-h2 {
-    margin-bottom: 15px;
+/* Top Bar */
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background: #21262d; /* Medium Gray Bar */
+    color: #c9d1d9;
+    border-radius: 8px 8px 0 0;
+}
+
+.top-bar .title {
+    font-size: 20px;
+    font-weight: bold;
     text-align: center;
-    color: #ffffff; /* White Text */
+    flex-grow: 1;
 }
 
-/* Theme Toggle Slider */
-.theme-toggle-container {
-    position: fixed;
-    top: 10px;
-    right: 20px;
-    z-index: 1000;
+.top-bar .actions {
+    display: flex;
+    gap: 10px;
 }
 
-.theme-switch {
-    position: relative;
-    display: inline-block;
-    width: 50px;
-    height: 25px;
-}
-
-.theme-switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.slider {
-    position: absolute;
+.top-bar .actions button {
+    background: #2d333b;
+    color: #c9d1d9;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
     cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #555555; /* Toggle Background */
-    transition: 0.4s;
-    border-radius: 34px;
+    font-weight: bold;
+    transition: background 0.3s, transform 0.2s;
 }
 
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 20px;
-    width: 20px;
-    left: 4px;
-    bottom: 2.5px;
-    background-color: #ffffff;
-    transition: 0.4s;
-    border-radius: 50%;
+.top-bar .actions button:hover {
+    background: #39414a; /* Slightly Lighter Gray on Hover */
+    transform: scale(1.1);
 }
 
-input:checked + .slider {
-    background-color: #1a73e8; /* Blue Toggle */
-}
-
-input:checked + .slider:before {
-    transform: translateX(24px);
-}
-
-/* Chat Log Styling */
+/* Chat Log */
 .chat-log {
     flex-grow: 1;
     overflow-y: auto;
     padding: 10px;
+    background-color: #0d1117; /* Match Dark Background */
     border-radius: 8px;
-    background-color: #1e1e2e; /* Match Background */
     scroll-behavior: smooth;
 }
 
-/* Message Styling */
+/* Message Containers */
 .message-container {
     display: flex;
     align-items: flex-start;
@@ -109,13 +89,7 @@ input:checked + .slider:before {
     justify-content: flex-start;
 }
 
-.profile-image {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    margin: 0 10px;
-}
-
+/* Message Bubbles */
 .message-bubble {
     max-width: 70%;
     padding: 15px;
@@ -126,31 +100,66 @@ input:checked + .slider:before {
     white-space: pre-wrap;
     position: relative;
     transition: transform 0.2s ease;
-    color: #ffffff;
+    color: #c9d1d9;
 }
 
 .message-bubble:hover {
-    transform: scale(1.02); /* Subtle Hover Effect */
+    transform: scale(1.02);
 }
 
-.user-message {
-    background-color: #1a73e8; /* User Message Blue */
+/* User Message */
+.message-bubble.user-message {
+    background-color: #21262d; /* Medium Gray for User Messages */
     border-top-left-radius: 0;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); /* Light Shadow */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
 
-.bot-message {
-    background-color: #444c5c; /* Bot Message Darker Gray */
+/* Bot Message */
+.message-bubble.bot-message {
+    background-color: #2d333b; /* Slightly Lighter Gray for Bot Messages */
     border-top-right-radius: 0;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); /* Light Shadow */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column; /* Stack text and buttons */
 }
 
-/* Input Container and Styling */
+/* Button Container */
+.button-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+/* Copy and Retry Buttons */
+.copy-button, .retry-button {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #c9d1d9;
+    padding: 5px;
+    transition: transform 0.2s ease-in-out;
+}
+
+.copy-button:hover, .retry-button:hover {
+    transform: scale(1.2);
+}
+
+.copy-button::before {
+    content: "\1F4CB"; /* Copy icon */
+}
+
+.retry-button::before {
+    content: "\21bb"; /* Retry icon */
+}
+
+/* Input Container */
 .input-container {
     display: flex;
     align-items: center;
     padding: 10px 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.1); /* Light Border */
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 textarea#inputField {
@@ -161,30 +170,30 @@ textarea#inputField {
     border: none;
     resize: none;
     height: 50px;
-    background-color: #2f2f44; /* Darker Input Field */
-    color: #ffffff; /* Light Text */
+    background-color: #000000; /* Darker Gray Input Field */
+    color: #c9d1d9;
     transition: background-color 0.3s, color 0.3s;
 }
 
 textarea#inputField:focus {
     outline: none;
-    background-color: #444c5c; /* Slightly Lighter Focus */
+    background-color: #21262d; /* Slightly Lighter Gray on Focus */
 }
 
 button {
     padding: 12px 25px;
     border: none;
     border-radius: 8px;
-    background-color: #1a73e8; /* Blue Button */
-    color: white;
+    background-color: #2d333b; /* Medium Gray Button */
+    color: #c9d1d9;
     font-weight: bold;
     cursor: pointer;
     transition: background-color 0.3s, transform 0.2s;
 }
 
 button:hover {
-    background-color: #1565c0; /* Darker Blue on Hover */
-    transform: translateY(-2px); /* Lift Effect */
+    background-color: #39414a; /* Lighter Gray on Hover */
+    transform: translateY(-2px);
 }
 
 /* Animations */
@@ -197,4 +206,100 @@ button:hover {
         opacity: 1;
         transform: translateY(0);
     }
+}
+/* Load More Button */
+.load-more-container {
+    position: absolute; /* Allow placement relative to the container */
+    bottom: 10px; /* Align to the bottom of the container */
+    left: 10px; /* Align to the left of the container */
+}
+
+.load-more-container button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    background-color: #2d333b; /* Blue Background */
+    color: #cfd7e6;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.load-more-container button:hover {
+    background-color: #2d333b; /* Slightly brighter blue */
+    transform: scale(1.05);
+}
+
+/* Message container */
+.message-container {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    margin-bottom: 10px;
+}
+
+/* Message bubble */
+.message-bubble {
+    padding: 10px 15px;
+    border-radius: 15px;
+    max-width: 80%;
+    word-wrap: break-word;
+    position: relative;
+}
+
+.user-message {
+    background-color: #d1e7ff;
+    align-self: flex-end;
+}
+
+.bot-message {
+    background-color: #f1f1f1;
+    align-self: flex-start;
+}
+
+/* Button container */
+.button-container {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    display: none; /* Hidden by default */
+    gap: 5px;
+}
+
+/* Show buttons on hover */
+.message-container:hover .button-container {
+    display: flex; /* Show only on hover */
+}
+
+/* Edit button */
+.edit-button {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    color: #555;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+}
+
+.edit-button:hover {
+    color: #007bff; /* Highlight color on hover */
+}
+
+/* Copy button */
+.copy-button {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    color: #555;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+}
+
+.copy-button:hover {
+    color: #28a745; /* Highlight color on hover */
 }
