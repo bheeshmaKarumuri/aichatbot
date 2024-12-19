@@ -6,4 +6,5 @@ Flask-SQLAlchemy
 Flask-Bcrypt
 eventlet
 gunicorn
+requests
 
