@@ -303,3 +303,13 @@ button:hover {
 .copy-button:hover {
     color: #28a745; /* Highlight color on hover */
 }
+.copy-icon, .edit-icon {
+    margin-left: 10px;
+    cursor: pointer;
+    font-size: 0.9em;
+    color: #666;
+}
+
+.copy-icon:hover, .edit-icon:hover {
+    color: #000;
+}

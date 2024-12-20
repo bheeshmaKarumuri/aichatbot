@@ -178,6 +178,39 @@ def upload_image():
             return jsonify({"error": output.get("error", "Unknown error occurred")}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+@app.route('/edit_message', methods=['PUT'])
+def edit_message():
+    if 'user_id' not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data = request.json
+    message_id = data.get('message_id')
+    new_message = data.get('new_message')
+
+    if not message_id or not new_message:
+        return jsonify({"error": "Invalid data provided."}), 400
+
+    try:
+        # Find the old chat in the database
+        chat = Chat.query.filter_by(id=message_id, user_id=session['user_id']).first()
+        if not chat:
+            return jsonify({"error": "Message not found."}), 404
+
+        # Delete the old chat
+        db.session.delete(chat)
+        db.session.commit()
+
+        # Generate a new response
+        new_response = generate_request(new_message)
+
+        # Save the new message and response
+        new_chat = Chat(user_id=session['user_id'], prompt=new_message, response=new_response)
+        db.session.add(new_chat)
+        db.session.commit()
+
+        return jsonify({"new_response": new_response}), 200
+    except Exception as e:
+        return jsonify({"error": f"Failed to edit message: {str(e)}"}), 500
 
 @app.route('/get_response', methods=['POST'])
 def get_response():
@@ -208,7 +241,6 @@ def get_response():
 
 @app.route('/get_chat_history', methods=['GET'])
 def get_chat_history():
-    """Retrieve chat history for the logged-in user."""
     if 'user_id' not in session:
         return jsonify({"error": "Unauthorized"}), 401
 

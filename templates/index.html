@@ -9,23 +9,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script>
 
-function copyText(messageClass) {
-        // Find the message by its class
-        const messageElement = document.querySelector(`.${messageClass} p`);
-        const textToCopy = messageElement.textContent || messageElement.innerText;
-
-        // Create a temporary input element to copy the text
-        const textArea = document.createElement("textarea");
-        textArea.value = textToCopy;
-        document.body.appendChild(textArea);
-        textArea.select();  // Select the text
-        document.execCommand("copy");  // Copy the selected text
-        document.body.removeChild(textArea);  // Remove the temporary input
-
-        // Optional: Show a success message or change button style
-        alert('Text copied to clipboard!');
-    }
-        document.addEventListener("DOMContentLoaded", () => {
+     
+    document.addEventListener("DOMContentLoaded", () => {
             document.body.classList.add('light-mode'); // Default to light mode
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'dark') {
@@ -37,46 +22,129 @@ function copyText(messageClass) {
         let currentPage = 1;
         let isIncognito = false;
 
-        // Load Chat History
-        async function loadChatHistory() {
-            const chatLog = document.getElementById('chatLog');
-            try {
-                const response = await fetch(`/get_chat_history?page=${currentPage}&per_page=10`);
-                if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-                const data = await response.json();
 
-                if (data.chats) {
-                    data.chats.forEach(chat => {
-                        appendChatMessage(chat.prompt, 'user');
-                        appendChatMessage(chat.response, 'bot');
-                    });
-                    chatLog.scrollTop = chatLog.scrollHeight; // Scroll to bottom
+async function loadChatHistory() {
+    const chatLog = document.getElementById('chatLog');
+    const loadMoreButton = document.getElementById('loadMoreButton');
+
+    try {
+        const response = await fetch(`/get_chat_history?page=${currentPage}&per_page=10`);
+        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+        const data = await response.json();
+
+        if (data.chats && data.chats.length > 0) {
+            data.chats.forEach(chat => {
+                appendChatMessage(chat.prompt, 'user');
+                appendChatMessage(chat.response, 'bot');
+            });
+            chatLog.scrollTop = chatLog.scrollHeight; // Scroll to bottom for the initial load
+        }
+
+        if (data.current_page >= data.total_pages) {
+            loadMoreButton.style.display = 'none'; // Hide Load More button if no more pages
+        } else {
+            loadMoreButton.style.display = 'block'; // Show Load More button
+        }
+    } catch (error) {
+        console.error('Error loading chat history:', error);
+    }
+}
+
+        // Append Message to Chat Log
+        function appendChatMessage(message, sender, messageId = null) {
+        const chatLog = document.getElementById('chatLog');
+        const messageContainer = document.createElement('div');
+        messageContainer.className = `message-container ${sender}`;
+        messageContainer.dataset.messageId = messageId; // Store message ID if available
+
+        const messageBubble = document.createElement('div');
+        messageBubble.className = `message-bubble ${sender}-message`;
+
+        const messageTextDiv = document.createElement('div');
+        messageTextDiv.className = 'message-text';
+        messageTextDiv.textContent = message;
+
+        // Add Copy Icon
+        const copyIcon = document.createElement('i');
+        copyIcon.className = 'fas fa-copy copy-icon';
+        copyIcon.onclick = () => copyText(messageTextDiv);
+
+        messageBubble.appendChild(messageTextDiv);
+        messageBubble.appendChild(copyIcon);
+
+        // Add Edit Icon (only for user messages)
+        // if (sender === 'user') {
+        //     const editIcon = document.createElement('i');
+        //     editIcon.className = 'fas fa-edit edit-icon';
+        //     editIcon.onclick = () => editMessage(messageContainer, messageId);
+        //     messageBubble.appendChild(editIcon);
+        // }
+
+        messageContainer.appendChild(messageBubble);
+        chatLog.appendChild(messageContainer);
+        chatLog.scrollTop = chatLog.scrollHeight; // Auto-scroll
+    }
+
+    function copyText(messageElement) {
+        const textToCopy = messageElement.textContent || messageElement.innerText;
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            alert('Text copied to clipboard!');
+        });
+    }
+
+    async function editMessage(messageContainer, messageId) {
+        const messageTextDiv = messageContainer.querySelector('.message-text');
+        const originalMessage = messageTextDiv.textContent;
+
+        // Prompt user to edit the message
+        const newMessage = prompt('Edit your message:', originalMessage);
+        if (!newMessage || newMessage.trim() === originalMessage.trim()) return;
+
+        // Update message visually
+        messageTextDiv.textContent = newMessage.trim();
+
+        // Update the message in the database and get a new response
+        try {
+            const response = await fetch('/edit_message', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message_id: messageId, new_message: newMessage.trim() })
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                // Replace the old bot response with the new one
+                const botMessage = messageContainer.nextSibling.querySelector('.message-text');
+                botMessage.textContent = data.new_response;
+            } else {
+                alert(data.error || 'Failed to update the message.');
+                // Revert to the original message if update fails
+                messageTextDiv.textContent = originalMessage;
+            }
+        } catch (error) {
+            console.error('Error editing message:', error);
+            alert('An error occurred. Please try again.');
+            messageTextDiv.textContent = originalMessage;
+        }
+    }
+        // Logout Functionality
+        async function logout() {
+            try {
+                const response = await fetch('/logout');
+                if (response.redirected) {
+                    window.location.href = response.url; // Redirect to login
                 }
             } catch (error) {
-                console.error('Error loading chat history:', error);
+                console.error('Error logging out:', error);
             }
         }
 
-        // Append Message to Chat Log
-        function appendChatMessage(message, sender) {
-            const chatLog = document.getElementById('chatLog');
-            const messageContainer = document.createElement('div');
-            messageContainer.className = `message-container ${sender}`;
+        // Increment Page and Load More Chats
+        async function loadMoreChatHistory() {
+    currentPage++;
+    await loadChatHistory();
+}
 
-            const messageBubble = document.createElement('div');
-            messageBubble.className = `message-bubble ${sender}-message`;
-
-            const messageTextDiv = document.createElement('div');
-            messageTextDiv.className = 'message-text';
-            messageTextDiv.textContent = message;
-
-            messageBubble.appendChild(messageTextDiv);
-            messageContainer.appendChild(messageBubble);
-            chatLog.appendChild(messageContainer);
-
-            chatLog.scrollTop = chatLog.scrollHeight; // Auto-scroll
-        }
- 
         // Upload Image
         async function uploadImage() {
             const fileInput = document.getElementById('imageUpload');
@@ -187,12 +255,18 @@ function copyText(messageClass) {
             </div>
             <div class="title">AI Chatbot</div>
             <div class="actions">
+                <button onclick="logout()">Logout</button>
                 <button onclick="clearChat()">Clear Chat</button>
             </div>
         </div>
 
         <!-- Chat Log -->
         <div id="chatLog" class="chat-log"></div>
+
+        <!-- Load More Button -->
+        <div class="load-more-container">
+            <button id="loadMoreButton" onclick="loadMoreChatHistory()">Load More</button>
+        </div>
 
         <!-- Upload Section -->
         <div class="upload-container">
